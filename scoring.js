@@ -10,35 +10,54 @@ const port = 2000;
 const result = [];
 const maxPageSize = 50;
 
+var medianaDeuda = 0;
+
+// COMMON FUNCTIONS
 Array.prototype.findByValueOfObject = function(key, value) {
   return this.filter(function(item) {
     return (item[key] === value);
   });
 }
 
+function median(values){
+  values.sort(function(a,b){
+    return a-b;
+  });
+  var half = Math.floor(values.length / 2);
+  
+  if (values.length % 2)
+    return values[half];
+  else
+    return (values[half - 1] + values[half]) / 2.0;
+}
 
+// MAIN DATA READER
 fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
   .pipe(csvParser())
   .on("data", (data) => {
     result.push(data);
   })
   .on("end", (err) => {
-    if (err) console.log("An error has occurred");
+    if (err) console.debug("An error has occurred");
     else {
+      console.debug("Receiving financial information about debts...");
+      const probabilidades = new Array();
+
       result.forEach(v => {
 
         v['id'] = v['id'].replace(/^0+/, '');
         v['name'] = v['name'].replace(/\s\s+/g, ' ').replace(' ,', ',').trim();
-
-        v['defaultProbability12months'] = v['defaultProbability12months']/100.0;
+        // me lo guardo para calcular la mediana
+        probabilidades.push(v['defaultProbability12months']/100.0);
 
         var default_probabilities = {
-          months_3: undefined,
-          months_6: undefined,
-          months_9: undefined,
-          months_12: v['defaultProbability12months']
-        }
-        v.default_probabilities = default_probabilities;
+          within_3_months: 0,
+          within_6_months: 0,
+          within_9_months: 0,
+          within_12_months: v['defaultProbability12months']/100.0
+        };
+
+        v.default_probability = default_probabilities;
 
         var links = {
           href:"/models/scoring/individuals/"+v.id
@@ -47,12 +66,18 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
 
         delete v['defaultProbability12months'];
       });
-      console.log("Recibido nuevo modelo de prediccion de score futuro!");
+
+      // me guardo la mediana de las deudas para dar un indicador relativo
+      // de la deuda de cada deudor
+      medianaDeuda = median(probabilidades);
+
+      console.debug("DONE. Financial records updated\n");
+      //console.debug("\nMedian value of debt: %d\n", medianaDeuda);
+
+      // cuando tenga cargada en memoria la actualizacion, levanto la API.
+      app.listen(port, () => console.debug(`Scoring model API listening on port ${port}!`));
     }
   });
-
-  
-app.listen(port, () => console.log(`model scoring API listening on port ${port}!`));
 
 
 app.get('/models/scoring/individuals/:id', (req, res) => {
