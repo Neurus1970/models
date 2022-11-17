@@ -1,5 +1,6 @@
 const fs = require("fs");
 const csvParser = require("csv-parser");
+const ss = require('simple-statistics')
 
 const express = require('express');
 const app = express();
@@ -19,17 +20,6 @@ Array.prototype.findByValueOfObject = function(key, value) {
   });
 }
 
-function median(values){
-  values.sort(function(a,b){
-    return a-b;
-  });
-  var half = Math.floor(values.length / 2);
-  
-  if (values.length % 2)
-    return values[half];
-  else
-    return (values[half - 1] + values[half]) / 2.0;
-}
 
 // MAIN DATA READER
 fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
@@ -69,12 +59,24 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
 
       // me guardo la mediana de las deudas para dar un indicador relativo
       // de la deuda de cada deudor
-      medianaDeuda = median(probabilidades);
+      medianaDeuda = ss.median(probabilidades);
+      desviacion = ss.standardDeviation(probabilidades);
+      mediaDeuda = ss.mean(probabilidades);
+
+      result.forEach(d => {
+        d.percentile = 100 * ((d.default_probability.within_12_months - medianaDeuda) / desviacion);
+        d.median = medianaDeuda;
+        d.mean = mediaDeuda;
+        d.standardDeviation = desviacion;
+        d.stdUp = mediaDeuda + desviacion;
+        d.stdDown = mediaDeuda - desviacion
+      });
+
 
       console.debug("DONE. Financial records updated\n");
       //console.debug("\nMedian value of debt: %d\n", medianaDeuda);
 
-      // cuando tenga cargada en memoria la actualizacion, levanto la API.
+      // ahora que tengo cargada en memoria la actualizacion, levanto la API.
       app.listen(port, () => console.debug(`Scoring model API listening on port ${port}!`));
     }
   });
@@ -101,6 +103,22 @@ app.get('/models/scoring/individuals/:id', (req, res) => {
 
 });
 
+app.delete('/models/scoring/individuals/:id', (req, res) => {
+
+  var deudorX = result.findByValueOfObject("id", req.params.id);
+
+  if (deudorX.length == 0) {
+    res.writeHead(404, {"Content-Type": "text/plain"});
+    res.write("404 Not found");
+  } else {
+    result.splice(deudorX, 1);
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    res.write("200 OK")
+  }
+  
+  res.end()
+
+});
 
 app.get('/models/scoring/individuals', (req, res) => {
 
@@ -144,6 +162,7 @@ app.get('/models/scoring/individuals', (req, res) => {
     }
 
     if (deudoresAmostrar.length != 0) {
+
       var cantidadPaginas = Math.floor(deudores.length / pageSize);
       if (deudores.length % pageSize != 0)
         cantidadPaginas++;
