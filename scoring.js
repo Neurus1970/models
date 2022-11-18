@@ -57,21 +57,33 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
         delete v['defaultProbability12months'];
       });
 
+      // orderno por probabilidad de default para poder contar
+      result.sort((a,b) => a.default_probability.within_12_months - b.default_probability.within_12_months);
+      var percentileRanks = Math.floor(result.length/10);
+      var rankLimits = [];
+      for (i=0; i<=9; i++) {
+        limit = result[i*percentileRanks].default_probability.within_12_months;
+        rankLimits.push(limit);
+      };
+
+      console.debug("RANK LIMITS: %s", rankLimits);
+
       // me guardo la mediana de las deudas para dar un indicador relativo
       // de la deuda de cada deudor
-      medianaDeuda = ss.median(probabilidades);
-      desviacion = ss.standardDeviation(probabilidades);
-      mediaDeuda = ss.mean(probabilidades);
+      var medianaDeuda = ss.median(probabilidades);
+      var desviacion = ss.standardDeviation(probabilidades);
+      var mediaDeuda = ss.mean(probabilidades);
 
       result.forEach(d => {
-        d.percentile = 100 * ((d.default_probability.within_12_months - medianaDeuda) / desviacion);
         d.median = medianaDeuda;
         d.mean = mediaDeuda;
-        d.standardDeviation = desviacion;
-        d.stdUp = mediaDeuda + desviacion;
-        d.stdDown = mediaDeuda - desviacion
+        d.rank = 10;
+        for (i=0; i<=9; i++) {
+          if (d.default_probability.within_12_months >= rankLimits[i]) {
+            d.rank = i;
+          }
+        };
       });
-
 
       console.debug("DONE. Financial records updated\n");
       //console.debug("\nMedian value of debt: %d\n", medianaDeuda);
