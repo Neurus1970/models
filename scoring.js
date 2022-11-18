@@ -77,6 +77,7 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
       result.forEach(d => {
         d.median = medianaDeuda;
         d.mean = mediaDeuda;
+        d.stdDev = desviacion;
         d.rank = 10;
         for (i=0; i<=9; i++) {
           if (d.default_probability.within_12_months >= rankLimits[i]) {
@@ -117,15 +118,19 @@ app.get('/models/scoring/individuals/:id', (req, res) => {
 
 app.delete('/models/scoring/individuals/:id', (req, res) => {
 
-  var deudorX = result.findByValueOfObject("id", req.params.id);
-
-  if (deudorX.length == 0) {
+  var posicionElemento = result.findIndex(({id}) => id == req.params.id);
+  if (posicionElemento == -1) {
     res.writeHead(404, {"Content-Type": "text/plain"});
-    res.write("404 Not found");
+    res.write("404 Not found")
   } else {
-    result.splice(deudorX, 1);
-    res.writeHead(200, {"Content-Type": "text/plain"});
-    res.write("200 OK")
+    var elementoEliminado = result.splice(posicionElemento, 1);
+    if (elementoEliminado.length != 0) {
+      res.writeHead(200, {"Content-Type": "text/plain"});
+      res.write("200 OK")
+    } else {
+      res.writeHead(500, {"Content-Type": "text/plain"});
+      res.write("500 Internal Server Error")
+    }
   }
   
   res.end()
