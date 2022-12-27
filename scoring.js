@@ -1,17 +1,13 @@
+const config = require('./config');
 const fs = require("fs");
-const csvParser = require("csv-parser");
 const ss = require('simple-statistics')
-
+const csvParser = require("csv-parser");
 const express = require('express');
-const app = express();
 const querystring = require('querystring');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, prettyPrint } = format;
 
-const port = 2000;
-
-const result = [];
-const maxPageSize = 50;
-
-var medianaDeuda = 0;
+require('winston-daily-rotate-file');
 
 // COMMON FUNCTIONS
 Array.prototype.findByValueOfObject = function(key, value) {
@@ -20,6 +16,44 @@ Array.prototype.findByValueOfObject = function(key, value) {
   });
 }
 
+const ignorePrivate = format((info, opts) => {
+  if (info.private) { return config.log.printPrivateData }
+  return info;
+});
+
+process.env.NODE_ENV = config.environment;
+let port = config.port;
+let maxPageSize = config.maxPageSize;
+
+var myTransports = [];
+
+var fileTransport = new transports.DailyRotateFile({
+  filename: config.log.path.concat("/").concat(config.log.filename),
+  level: config.log.level,
+  zippedArchive: config.log.zippedArchive,
+  maxSize: config.log.maxSize,
+  maxFiles: config.log.maxFiles
+});
+
+myTransports.push(fileTransport);
+if (process.env.NODE_ENV === "development")
+  myTransports.push(new transports.Console());
+
+const logger = createLogger({
+  level: config.log.level,
+  format: format.combine(
+    ignorePrivate(),
+    timestamp(),
+    prettyPrint()
+  ),
+  defaultMeta: { service: 'user-service' },
+  transports: myTransports
+});
+
+
+logger.debug(`ENVIRONMENT: ${process.env.NODE_ENV}`);
+
+let result = [];
 
 // MAIN DATA READER
 fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
@@ -28,15 +62,16 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
     result.push(data);
   })
   .on("end", (err) => {
-    if (err) console.debug("An error has occurred");
+    if (err) logger.error("An error has occurred reading file ./resources/ResultadoScoringIndividuos.csv");
     else {
-      console.debug("Receiving financial information about debts...");
+      logger.info("Receiving financial information about debts...");
       const probabilidades = new Array();
 
       result.forEach(v => {
 
         v['id'] = v['id'].replace(/^0+/, '');
         v['name'] = v['name'].replace(/\s\s+/g, ' ').replace(' ,', ',').trim();
+
         // me lo guardo para calcular la mediana
         probabilidades.push(v['defaultProbability12months']/100.0);
 
@@ -66,7 +101,7 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
         rankLimits.push(limit);
       };
 
-      console.debug("RANK LIMITS: %s", rankLimits);
+      logger.debug(`RANK LIMITS: ${rankLimits}`);
 
       // me guardo la mediana de las deudas para dar un indicador relativo
       // de la deuda de cada deudor
@@ -86,13 +121,20 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
         };
       });
 
-      console.debug("DONE. Financial records updated\n");
-      //console.debug("\nMedian value of debt: %d\n", medianaDeuda);
+      logger.info("DONE. Financial records updated");
 
       // ahora que tengo cargada en memoria la actualizacion, levanto la API.
-      app.listen(port, () => console.debug(`Scoring model API listening on port ${port}!`));
+      app.listen(port, () => {
+        logger.info(`Scoring model API listening on port ${port} !`);
+        app.emit("listening");
+      });
+
+      module.exports = { app };
+
     }
   });
+
+const app = express();
 
 
 app.get('/models/scoring/individuals/:id', (req, res) => {
@@ -128,6 +170,7 @@ app.delete('/models/scoring/individuals/:id', (req, res) => {
       res.writeHead(200, {"Content-Type": "text/plain"});
       res.write("200 OK")
     } else {
+      logger.error(`ERROR DELETING INDIVIDUAL ${elementoEliminado}`)
       res.writeHead(500, {"Content-Type": "text/plain"});
       res.write("500 Internal Server Error")
     }
