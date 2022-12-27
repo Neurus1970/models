@@ -8,6 +8,7 @@
   "main": "scoring.js",
   "scripts": {
     "test": "mocha --timeout 10000",
+    "coverage": "npm run bat && nyc --reporter=html --reporter=text npm test",
     "start": "SET NODE_ENV=dev && node scoring.js"
   },
   "repository": {
@@ -21,14 +22,19 @@
   },
   "homepage": "https://github.com/Neurus1970/models#readme",
   "dependencies": {
+    "body-parser": "^1.20.1",
     "csv-parser": "^3.0.0",
     "express": "^4.18.1",
     "querystring": "^0.2.1",
-    "simple-statistics": "^7.8.0"
+    "simple-statistics": "^7.8.0",
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
     "chai": "^4.3.7",
     "chai-http": "^4.3.0",
-    "mocha": "^10.1.0"
+    "mocha": "^10.1.0",
+    "nyc": "^15.1.0",
+    "supertest": "^6.3.3"
   }
 }
