@@ -11,6 +11,9 @@ const port = 2000;
 const result = [];
 const maxPageSize = 50;
 
+let initCallback;
+let server;
+
 var medianaDeuda = 0;
 
 // COMMON FUNCTIONS
@@ -57,42 +60,62 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
         delete v['defaultProbability12months'];
       });
 
-      // orderno por probabilidad de default para poder contar
-      result.sort((a,b) => a.default_probability.within_12_months - b.default_probability.within_12_months);
-      var percentileRanks = Math.floor(result.length/10);
-      var rankLimits = [];
+    // orderno por probabilidad de default para poder contar
+    result.sort((a,b) => a.default_probability.within_12_months - b.default_probability.within_12_months);
+    var percentileRanks = Math.floor(result.length/10);
+    var rankLimits = [];
+    for (i=0; i<=9; i++) {
+      limit = result[i*percentileRanks].default_probability.within_12_months;
+      rankLimits.push(limit);
+    };
+
+    console.debug("RANK LIMITS: %s", rankLimits);
+
+    // me guardo la mediana de las deudas para dar un indicador relativo
+    // de la deuda de cada deudor
+    var medianaDeuda = ss.median(probabilidades);
+    var desviacion = ss.standardDeviation(probabilidades);
+    var mediaDeuda = ss.mean(probabilidades);
+
+    result.forEach(d => {
+      d.median = medianaDeuda;
+      d.mean = mediaDeuda;
+      d.stdDev = desviacion;
+      d.rank = 10;
       for (i=0; i<=9; i++) {
-        limit = result[i*percentileRanks].default_probability.within_12_months;
-        rankLimits.push(limit);
+        if (d.default_probability.within_12_months >= rankLimits[i]) {
+          d.rank = i+1;
+        }
       };
+    });
 
-      console.debug("RANK LIMITS: %s", rankLimits);
+    console.debug("DONE. Financial records updated\n");
+    app.emit('ready');
 
-      // me guardo la mediana de las deudas para dar un indicador relativo
-      // de la deuda de cada deudor
-      var medianaDeuda = ss.median(probabilidades);
-      var desviacion = ss.standardDeviation(probabilidades);
-      var mediaDeuda = ss.mean(probabilidades);
+  }
+});
 
-      result.forEach(d => {
-        d.median = medianaDeuda;
-        d.mean = mediaDeuda;
-        d.stdDev = desviacion;
-        d.rank = 10;
-        for (i=0; i<=9; i++) {
-          if (d.default_probability.within_12_months >= rankLimits[i]) {
-            d.rank = i;
-          }
-        };
-      });
 
-      console.debug("DONE. Financial records updated\n");
-      //console.debug("\nMedian value of debt: %d\n", medianaDeuda);
+app.on('ready', function() {
+  server = app.listen(port, function() { 
+    console.debug(`Scoring model API listening on port ${port}!`); 
+    app.emit("appStarted");
+  }); 
+});
 
-      // ahora que tengo cargada en memoria la actualizacion, levanto la API.
-      app.listen(port, () => console.debug(`Scoring model API listening on port ${port}!`));
-    }
-  });
+
+app.on('shutdown', function() {
+  if(server)
+    server.close();
+  process.exit(0);
+});
+
+process.on('SIGINT', function() {
+  console.debug("Caught interrupt signal");
+  app.emit('shutdown');
+});
+
+module.exports = { app }
 
 
 app.get('/models/scoring/individuals/:id', (req, res) => {
@@ -116,6 +139,7 @@ app.get('/models/scoring/individuals/:id', (req, res) => {
 
 });
 
+
 app.delete('/models/scoring/individuals/:id', (req, res) => {
 
   var posicionElemento = result.findIndex(({id}) => id == req.params.id);
@@ -137,6 +161,7 @@ app.delete('/models/scoring/individuals/:id', (req, res) => {
 
 });
 
+
 app.get('/models/scoring/individuals', (req, res) => {
 
   var initialTime = new Date();
@@ -147,7 +172,6 @@ app.get('/models/scoring/individuals', (req, res) => {
     pageSize = maxPageSize
   else
     pageSize = parseInt(req.query.pageSize);
-
 
   if (req.query.name !== undefined) {
     names = req.query.name.toUpperCase().split(" ");
@@ -160,7 +184,7 @@ app.get('/models/scoring/individuals', (req, res) => {
   if (deudores.length == 0) {
     res.writeHead(404, {"Content-Type": "text/plain"});
     res.write("404 Not found");
-    res.end();
+
   } else {
     if (deudores.length < pageSize)
       pageSize = deudores.length;
@@ -211,14 +235,15 @@ app.get('/models/scoring/individuals', (req, res) => {
         salida.nextPage = nextPage
 
       salida.debtors = deudoresAmostrar; 
+      res.status(200).json(salida);
 
-      res.status(200).json(salida);      
     } else {
       res.writeHead(404, {"Content-Type": "text/plain"});
       res.write("404 Not found");
-      res.end();
     }
 
   }
+
+  res.end();
 
 });
