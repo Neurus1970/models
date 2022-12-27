@@ -1,7 +1,11 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../scoring.js').app;
 const config = require('../config.js');
+
+config.log.level = "info"
+
+const app = require('../scoring.js').app;
+
 
 chai.should()
 chai.use(chaiHttp)

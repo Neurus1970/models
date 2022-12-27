@@ -1,3 +1,5 @@
 node_modules
 *.csv
 *.log
+*-audit.json
+package-lock.json
