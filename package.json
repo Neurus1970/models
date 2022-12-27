@@ -9,7 +9,7 @@
   "scripts": {
     "test": "mocha --timeout 10000",
     "coverage": "npm run bat && nyc --reporter=html --reporter=text npm test",
-    "start": "SET NODE_ENV=dev && node scoring.js"
+    "start": "set NODE_ENV=dev && node scoring.js"
   },
   "repository": {
     "type": "git",
