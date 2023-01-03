@@ -61,14 +61,16 @@ logger.debug(`ENVIRONMENT: ${process.env.NODE_ENV}`);
 let result = [];
 
 // MAIN DATA READER
-fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
+fs.createReadStream(config.filePath)
   .pipe(csvParser())
   .on("data", (data) => {
     result.push(data);
   })
   .on("end", (err) => {
-    if (err) logger.error("An error has occurred reading file ./resources/ResultadoScoringIndividuos.csv");
-    else {
+    if (err) {
+      logger.error("An error has occurred reading file ", config.filePath);
+      logger.error(err)
+    } else {
       logger.info("Receiving financial information about debts...");
       const probabilidades = new Array();
 
@@ -128,6 +130,19 @@ fs.createReadStream("resources/ResultadoScoringIndividuos.csv")
     logger.info("DONE. Financial records updated");
     app.emit('ready');
 
+  }
+});
+
+
+fs.watch(config.filePath, function(event, filename) {
+  if(filename){
+    logger.info('Event : ' + event);
+    logger.info(filename + ' file Changed ...');
+    //file = fs.readFileSync(config.filePath);
+    //console.log('File content at : ' + new Date() + ' is \n' + file);
+  }
+  else{
+    logger.error('filename not provided')
   }
 });
 

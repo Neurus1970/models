@@ -3,6 +3,7 @@ module.exports = {
   environment: "development", // valid options: "development" | "production"
   port: 3000,
   maxPageSize: 50,
+  filePath: "resources/ResultadoScoringIndividuos.csv",
   log: {
     level: "debug",
     path: "./logs",
