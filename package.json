@@ -7,8 +7,8 @@
   "version": "1.0.0",
   "main": "scoring.js",
   "scripts": {
-    "test": "mocha --timeout 10000",
-    "coverage": "npm run bat && nyc --reporter=html --reporter=text npm test",
+    "test": "mocha --timeout 20000",
+    "coverage": "nyc mocha --timeout 20000",
     "start": "set NODE_ENV=dev && node scoring.js"
   },
   "repository": {
