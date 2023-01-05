@@ -3,3 +3,4 @@ node_modules
 *.log
 *-audit.json
 package-lock.json
+.nyc_output/

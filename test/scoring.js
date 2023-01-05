@@ -1,25 +1,24 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
 const config = require('../config.js');
-
-config.log.level = "info"
-
 const app = require('../scoring.js').app;
 
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 
 chai.should()
 chai.use(chaiHttp)
 
 
 before(function (done) {
-  app.on("appStarted", function(){
+  app.on("appStarted", function() {
+    config.settings.log.level = "debug";
     done();
   });
 });
 
+
 describe('When I GET the list of scored debtors', () => {
 
-  it('responds with HTTP 200 and a list of individuals', () => {
+  it('responds with HTTP 200 response code', () => {
     return chai.request(app)
       .get('/models/scoring/individuals')
       .then(res => {
@@ -30,12 +29,11 @@ describe('When I GET the list of scored debtors', () => {
     })
   });
 
-
-  it('contains a list with '+ config.maxPageSize +' elements', () => {
+  it('contains a list with '+ config.settings.maxPageSize +' elements', () => {
     return chai.request(app)
       .get('/models/scoring/individuals')
       .then(res => {
-        res.body.debtors.should.have.length(config.maxPageSize)
+        res.body.debtors.should.have.length(config.settings.maxPageSize)
       })
       .catch(err => {
         throw err
@@ -58,5 +56,5 @@ describe('When I GET the list of scored debtors', () => {
 
 after((done) => {
   app.emit('shutdown');
-  console.log('Call for shutdown');
+  config.logger.info('Call for shutdown');
 });
