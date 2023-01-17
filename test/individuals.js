@@ -110,7 +110,7 @@ describe('When a consumer application apply a filter by individual name', () => 
     })
   });
 
-  it('displays a list of individuals whose names contains the filter ', () => {
+  it('displays a list of individuals whose names are cointained in the filter ', () => {
     return chai.request(app)
       .get('/models/scoring/individuals?name='+first_individual.name.split(',')[0])
       .then(res => {
