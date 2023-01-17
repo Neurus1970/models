@@ -16,12 +16,31 @@ jobs:
       - run:
           command: npm run coverage
           name: Run coverage
-      - store_test_results:
-          path: coverage
       - persist_to_workspace:
           root: ~/project
           paths:
             - .
+
+      # Run coverage report for Code Climate
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+              # download test reporter as a static binary
+              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+              chmod +x ./cc-test-reporter
+              ./cc-test-reporter before-build
+          when: always
+      - run:
+          name: Send coverage report to Code Climate
+          command:
+              # nyc report requires that nyc has already been run,
+              # which creates the .nyc_output folder containing necessary data
+              ./cc-test-reporter after-build -t lcov
+          when: always
+      # Upload results
+      - store_artifacts: # upload test coverage as artifact
+          path: ./coverage/lcov.info
+          prefix: tests
 
   deploy: # this can be any name you choose
     executor: heroku/default
