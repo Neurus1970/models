@@ -1,71 +1,137 @@
-# Scoring model API
+const config = require('../config');
+const router = require('express').Router();
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/e74308bdc62b801f3112/maintainability)](https://codeclimate.com/github/Neurus1970/models/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/e74308bdc62b801f3112/test_coverage)](https://codeclimate.com/github/Neurus1970/models/test_coverage)
+router.get('/models/scoring/individuals/:id', (req, res) => {
 
-An API exposing the credit score and default probability for the individual and SMEs debtors in the market.
-The score is updated every month with a 12 months time horizon by a Machine Learning model certified by the corporation. The mehtod by wich the score is calculated is beyond the scope of this document. The main objective of this document is to provide a guide to use this API.
+  var initialTime = new Date();
 
-There are two endpoints for this models `/individuals` which provides the score information asociated with the physical persons, and the `/pymes` endpoint grants access to SMEs operating in the regulated market.
+  var posicionElemento = config.settings.individualsScoreData.findIndex(({id}) => id == req.params.id);
 
-## Physical persons score
+  if (posicionElemento == -1) {
+    res.writeHead(404, {"Content-Type": "text/plain"});
+    res.write("404 Not found");
+    res.end();
+  } else {
+   var salida = {
+      searchTime: new Date().getTime() - initialTime.getTime(),
+      hits: 1,
+      debtors: config.settings.individualsScoreData[posicionElemento]
+    }
+    res.status(200).json(salida);
+  }
 
-![individuals model calification](resources/individuals_model_score.png)
-
-### Performing a request
-
-To get a list with the analyzed individuals with the most up to date score calification, you should execute
-
-```http
-GET /models/scoring/individuals
-```
-
-The API will provide the followin response
-
-```javascript
-{
-  "searchTime": 0,
-  "hits": 1073,
-  "pageSize": 50,
-  "dataPages": 22,
-  "nextPage": "/models/scoring/individuals?page=2",
-  "debtors": []
-}
-```
-
-Where each element in the array `debtors` has this structure
-
-```javascript
-{
-  "id": "3890089",
-  "name": "DOS SANTOS QUESADA, ALICIA LORENZA",
-  "default_probability": {
-    "within_3_months": 0,
-    "within_6_months": 0,
-    "within_9_months": 0,
-    "within_12_months": 0.018247683
-  },
-  "_links": {
-    "href": "/models/scoring/individuals/3890089"
-  },
-  "median": 0.045284033,
-  "mean": 0.09683235834389563,
-  "stdDev": 0.1357565412061047,
-  "rank": 1
-}
-```  
-
-By default the API provides a paged list with 50 items in each page, the API also provides some hypermedia controls 
-
-| Hypermedia control                                  | function                            |
-| --------------------------------------------------- | ----------------------------------- |
-| `"nextPage": "/models/scoring/individuals?page=2"`  | provides the next page of data      |
-| `"prevPage": "/models/scoring/individuals?page=1"`  | provides the previous page of data  |
-| `"href": "/models/scoring/individuals/3890089"`     | link to the scored individual       |
+});
 
 
+router.get('/models/scoring/individuals', (req, res) => {
 
-## SMEs score
+  var initialTime = new Date();
+  var deudores = [];
+  var deudoresAmostrar = [];
 
-![sme model calification](resources/pymes_model_score.png)
+  if (req.query.pageSize === undefined || req.query.pageSize > config.settings.maxPageSize)
+    pageSize = config.settings.maxPageSize
+  else
+    pageSize = parseInt(req.query.pageSize);
+
+  if (req.query.name !== undefined) {
+    names = req.query.name.toUpperCase().split(" ");
+    config.settings.individualsScoreData.forEach(v => {
+      if(names.every(name => v.name.includes(name))) deudores.push(v);
+    });
+  } else
+    deudores = config.settings.individualsScoreData;
+
+  if (deudores.length == 0) {
+    res.writeHead(404, {"Content-Type": "text/plain"});
+    res.write("404 Not found");
+
+  } else {
+    if (deudores.length < pageSize)
+      pageSize = deudores.length;
+
+    if (req.query.page === undefined)
+      pageNumber = 0
+    else
+      pageNumber = parseInt(req.query.page)-1;
+
+    var offset = pageNumber*pageSize;
+    var lastRecord = (offset+pageSize > deudores.length ? deudores.length : offset+pageSize);
+
+    for (i=offset; i<lastRecord; i++) {
+      deudor = deudores[i];
+      deudoresAmostrar.push(deudor);
+    }
+
+    if (deudoresAmostrar.length != 0) {
+
+      var cantidadPaginas = Math.floor(deudores.length / pageSize);
+      if (deudores.length % pageSize != 0)
+        cantidadPaginas++;
+
+      nextPage = '/models/scoring/individuals?page='.concat(pageNumber+2);
+      prevPage = '/models/scoring/individuals?page='.concat(pageNumber);
+
+      if (req.query.name !== undefined) {
+        nextPage = nextPage.concat("&name=").concat(req.query.name).replace(" ", "%20");
+        prevPage = prevPage.concat("&name=").concat(req.query.name).replace(" ", "%20");
+      }
+
+      if (req.query.pageSize !== undefined) {
+        nextPage = nextPage.concat("&pageSize=").concat(req.query.pageSize);
+        prevPage = prevPage.concat("&pageSize=").concat(req.query.pageSize);
+      }
+
+      var salida = {
+        searchTime: new Date().getTime() - initialTime.getTime(),
+        hits: deudores.length,
+        pageSize: pageSize,
+        dataPages: cantidadPaginas
+      }
+
+      if (offset!=0)
+        salida.prevPage = prevPage
+
+      if (pageNumber+1 < cantidadPaginas)
+        salida.nextPage = nextPage
+
+      salida.debtors = deudoresAmostrar; 
+      res.status(200).json(salida);
+
+    } else {
+      res.writeHead(404, {"Content-Type": "text/plain"});
+      res.write("404 Not found");
+    }
+
+  }
+
+  res.end();
+
+});
 
 
+/*
+router.delete('/models/scoring/individuals/:id', (req, res) => {
+
+  var posicionElemento = config.settings.individualsScoreData.findIndex(({id}) => id == req.params.id);
+  if (posicionElemento == -1) {
+    res.writeHead(404, {"Content-Type": "text/plain"});
+    res.write("404 Not found")
+  } else {
+    var elementoEliminado = config.settings.individualsScoreData.splice(posicionElemento, 1);
+    if (elementoEliminado.length != 0) {
+      res.writeHead(200, {"Content-Type": "text/plain"});
+      res.write("200 OK")
+    } else {
+      res.writeHead(500, {"Content-Type": "text/plain"});
+      res.write("500 Internal Server Error");
+      config.logger.error(res);
+    }
+  }
+  
+  res.end()
+
+});
+*/
+
+module.exports = router;
