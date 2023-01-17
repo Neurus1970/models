@@ -8,7 +8,9 @@
   "main": "scoring.js",
   "scripts": {
     "test": "mocha --timeout 20000",
-    "coverage": "nyc mocha --timeout 20000",
+    "coverage": "npm run cover:unit && npm run cover:report",
+    "cover:unit": "nyc --silent npm run test",
+    "cover:report": "nyc report --reporter=lcov --reporter=text --reporter=clover",
     "start": "set NODE_ENV=dev && node scoring.js"
   },
   "repository": {
@@ -32,6 +34,7 @@
   "devDependencies": {
     "chai": "^4.3.7",
     "chai-http": "^4.3.0",
+    "karma-coverage-istanbul-reporter": "^3.0.3",
     "mocha": "^10.1.0",
     "nyc": "^15.1.0",
     "supertest": "^6.3.3"
