@@ -1,11 +1,11 @@
-# Default Probability & Credit Score API
+# Default Probability Prediction API
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e74308bdc62b801f3112/maintainability)](https://codeclimate.com/github/Neurus1970/models/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/e74308bdc62b801f3112/test_coverage)](https://codeclimate.com/github/Neurus1970/models/test_coverage)
 
-An API exposing the credit score and default probability for the individual and SMEs debtors in the market.
-The score is updated every month and __provides an estimated default probability with a 12 months time horizon__, this is produced by a Machine Learning model certified by the corporation. The mehtod by wich the score is calculated is beyond the scope of this document. The main objective of this document is to provide a guide to use this API and allow the integration with other systems that can implement a ReST interface to request the default probability (or credit score) of a particular individual or SME.
+An API exposing the future default probability for the individual and SMEs debtors in the market.
+The score is updated every month and __it provides an estimated default probability within a 12 months time horizon__, this is produced by a Machine Learning model certified by the corporation. The mehtod by wich this probability is calculated is beyond the scope of this document. The main objective of this document is to provide a guide to __use__ this ReST API and a mechanism to easily integrate with other systems able to use an HTTP ReST interface to request the default probability (or credit score) of a particular individual or SME.
 
-There are two endpoints for this models `/individuals` which provides the score information asociated with the physical persons, and the `/pymes` endpoint grants access to SMEs operating in the regulated market.
+There are two endpoints for this models `/individuals` which provides the score information asociated with physical persons, and the `/pymes` endpoint grants access to the score of the SMEs operating in the regulated market.
 
 ## Physical persons score
 
@@ -21,14 +21,14 @@ To get a list with the analyzed individuals with the most up to date score calif
 GET /models/scoring/individuals
 ```
 
-The API will provide the followin response
+The API will provide a response like this
 
 ```javascript
 {
-  "searchTime": 0,
+  "searchTime": 120,
   "hits": 1073,
   "pageSize": 50,
-  "dataPages": 22,
+  "dataPages": 1322,
   "nextPage": "/models/scoring/individuals?page=2",
   "debtors": []
 }
@@ -63,7 +63,7 @@ On top of the score for each particualr individual, the API provides reference d
 | `"median": 0.045284033`        | the __median__ of the default probability of the market in the current month                     |
 | `"mean": 0.09683235834389563`  | the __mean__ of the default probability of the market in the current month                       |
 | `"stdDev": 0.1357565412061047` | the __standard deviation__ of the default probability of the market in the current month         |
-| `"rank": 1`                    | the __percentil rank__ of the default probability [ 1 .. 10 ] of the market in the current month |
+| `"rank": 1`                    | the __decile rank__ of the default probability [ 1 .. 10 ] of the market in the current month |
 
 By default the API provides a paged list with 50 items in each page, it can be changed using the `pageSize=<n>` modificator in the query string, where "n" is an integer number. It can't be greater than the `maxPageSize` parameter configured by the system administrator (tipically 50 items per page). If you require more than 50 items per page, you problably would require a different interface (not a ReST API) to acces the score califications. There is a file system interface wich provides the entire dataset that you can acces. Please contact the system administrators to access this information.
 
