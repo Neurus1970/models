@@ -13,6 +13,9 @@ jobs:
       - run:
           command: npm run test
           name: Run tests
+      - run:
+          command: npm run coverage
+          name: Run coverage
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -27,7 +30,7 @@ jobs:
           force: true # force push when pushing to the heroku remote, see: https://devcenter.heroku.com/articles/git
 
 workflows:
-  test_my_app:
+  test_and_deploy:
     jobs:
       - build_and_test
       - deploy:

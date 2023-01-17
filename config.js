@@ -10,7 +10,7 @@ var settings = {
   maxPageSize: 50,
   filePath: "resources/ResultadoScoringIndividuos.csv",
   log: {
-    level: "debug",
+    level: "error", // | debug | info | error |
     path: "./logs",
     maxSize: "20m",
     maxFiles: "2d",
