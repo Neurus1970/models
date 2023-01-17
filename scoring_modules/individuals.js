@@ -110,7 +110,7 @@ router.get('/models/scoring/individuals', (req, res) => {
 });
 
 
-
+/*
 router.delete('/models/scoring/individuals/:id', (req, res) => {
 
   var posicionElemento = config.settings.individualsScoreData.findIndex(({id}) => id == req.params.id);
@@ -132,6 +132,7 @@ router.delete('/models/scoring/individuals/:id', (req, res) => {
   res.end()
 
 });
+*/
 
 module.exports = router;
 
