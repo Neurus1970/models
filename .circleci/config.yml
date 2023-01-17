@@ -1,27 +1,38 @@
-
 version: 2.1
+orbs:
+  node: circleci/node@4.7.0
+  heroku: circleci/heroku@1.2.6
 
 jobs:
-  test:
-    docker:
-      - image: cimg/node:18.12
+  build_and_test: # this can be any name you choose
+    executor: node/default # use the default executor defined within the orb
     steps:
       - checkout
-      - run: echo "Running tests"
-      - run: npm install
-      - run: npm test
-  build:
-    docker:
-      - image: cimg/node:18.12
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          command: npm run test
+          name: Run tests
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
+
+  deploy: # this can be any name you choose
+    executor: heroku/default
     steps:
-      - checkout
-      - run: echo "build project"
-      - npm install
-      - npm run build
+      - attach_workspace:
+          at: ~/project
+      - heroku/deploy-via-git:
+          force: true # force push when pushing to the heroku remote, see: https://devcenter.heroku.com/articles/git
 
 workflows:
-  test_build:
+  test_my_app:
     jobs:
-      - test
-      - build
-
+      - build_and_test
+      - deploy:
+          requires:
+            - build_and_test # only deploy if the build_and_test job has completed
+          filters:
+            branches:
+              only: main # only deploy when on main
