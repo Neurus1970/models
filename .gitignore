@@ -1,5 +1,4 @@
 node_modules
-*.csv
 *.log
 *-audit.json
 .nyc_output/
