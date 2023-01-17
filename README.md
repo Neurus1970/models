@@ -9,9 +9,18 @@ There are two endpoints for this models `/individuals` which provides the score 
 
 ## Physical persons score
 
-The use cases recomended by the corporation for this data are:
+The underlying model rating, along with the corporation's recommended use cases for this data are:
 
-![individuals model calification](resources/individuals_model_score.png)
+![individuals model score](resources/individuals_model_score.png)
+
+The rating is graduated on a scale from 1 to 5, with 1 being a "perfect" model (the theoretical maximum achievable) and 5 corresponding to a bad model, which cannot be used.
+The grading is made up of 5 elements to cover:
+* __D__: Data,
+* __IT__: infrastructure,
+* __M__: Fundamentals of the Model,
+* __P__: Performance, Sensitivity and uncertainty
+* __U__: Use of the Model, Controls and Government
+
 
 ### Performing a request
 
@@ -65,7 +74,7 @@ On top of the score for each particualr individual, the API provides reference d
 | `"stdDev": 0.1357565412061047` | the __standard deviation__ of the default probability of the market in the current month         |
 | `"rank": 1`                    | the __decile rank__ of the default probability [ 1 .. 10 ] of the market in the current month |
 
-By default the API provides a paged list with 50 items in each page, it can be changed using the `pageSize=<n>` modificator in the query string, where "n" is an integer number. It can't be greater than the `maxPageSize` parameter configured by the system administrator (tipically 50 items per page). If you require more than 50 items per page, you problably would require a different interface (not a ReST API) to acces the score califications. There is a file system interface wich provides the entire dataset that you can acces. Please contact the system administrators to access this information.
+By default the API provides a paged list with 50 items in each page, it can be changed using the `pageSize=<n>` modificator in the query string, where "n" is an integer number. It can't be greater than the `maxPageSize` parameter configured by the system administrator (tipically 50 items per page). If you require more than 50 items per page, you problably would require a different type of interface (not a ReST API) to acces the score califications. There is a file system interface wich provides the entire dataset that you can acces. Please contact the system administrators to access this information.
 
 The API also provides some hypermedia controls that allow you to navigate through the data pages. These are disigned to be used in conjunction with the search method implemented, that can filter by any debtor name (or part of it)
 
@@ -98,4 +107,14 @@ will display the second page of the dataset
 
 ## SMEs score
 
+The underlying model rating, along with the corporation's recommended use cases for this data are:
+
 ![sme model calification](resources/pymes_model_score.png)
+
+The rating is graduated on a scale from 1 to 5, with 1 being a "perfect" model (the theoretical maximum achievable) and 5 corresponding to a bad model, which cannot be used.
+The grading is made up of 5 elements to cover:
+* __D__: Data,
+* __IT__: infrastructure,
+* __M__: Fundamentals of the Model,
+* __P__: Performance, Sensitivity and uncertainty
+* __U__: Use of the Model, Controls and Government

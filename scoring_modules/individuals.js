@@ -109,29 +109,4 @@ router.get('/models/scoring/individuals', (req, res) => {
 
 });
 
-
-/*
-router.delete('/models/scoring/individuals/:id', (req, res) => {
-
-  var posicionElemento = config.settings.individualsScoreData.findIndex(({id}) => id == req.params.id);
-  if (posicionElemento == -1) {
-    res.writeHead(404, {"Content-Type": "text/plain"});
-    res.write("404 Not found")
-  } else {
-    var elementoEliminado = config.settings.individualsScoreData.splice(posicionElemento, 1);
-    if (elementoEliminado.length != 0) {
-      res.writeHead(200, {"Content-Type": "text/plain"});
-      res.write("200 OK")
-    } else {
-      res.writeHead(500, {"Content-Type": "text/plain"});
-      res.write("500 Internal Server Error");
-      config.logger.error(res);
-    }
-  }
-  
-  res.end()
-
-});
-*/
-
 module.exports = router;
