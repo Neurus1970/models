@@ -94,3 +94,8 @@ will display the second page of the dataset
 | `"nextPage": "/models/scoring/individuals?page=2"`  | provides the next page of data      |
 | `"prevPage": "/models/scoring/individuals?page=1"`  | provides the previous page of data  |
 | `"href": "/models/scoring/individuals/3890089"`     | link to the scored individual       |
+
+
+## SMEs score
+
+![sme model calification](resources/pymes_model_score.png)
