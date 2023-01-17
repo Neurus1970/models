@@ -8,7 +8,7 @@
   "main": "scoring.js",
   "scripts": {
     "test": "mocha --timeout 20000",
-    "coverage": "nyc mocha --timeout 20000",
+    "coverage": "nyc mocha --timeout 20000 --reporters=default --reporters=jest-junit",
     "start": "set NODE_ENV=dev && node scoring.js"
   },
   "repository": {
