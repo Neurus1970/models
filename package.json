@@ -10,7 +10,7 @@
     "test": "mocha --timeout 20000",
     "coverage": "npm run cover:unit && npm run cover:report",
     "cover:unit": "nyc --silent npm run test",
-    "cover:report": "nyc report --reporter=lcov --reporter=text --reporter=cobertura",
+    "cover:report": "nyc report --reporter=lcov --reporter=text --reporter=clover",
     "start": "set NODE_ENV=dev && node scoring.js"
   },
   "repository": {
