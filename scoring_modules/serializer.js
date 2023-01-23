@@ -7,18 +7,20 @@ const csvParser = require('csv-parser');
 var contadorEventos = 0;
 
 // MAIN DATA READER
-function readIndividuals(loaded) {
+function readDataFile(loaded, filePath) {
 
   var dataStream = [];
 
-  fs.createReadStream(config.settings.filePath)
+  if (!filePath) { filePath = config.settings.individualsFilePath };
+
+  fs.createReadStream(filePath)
     .pipe(csvParser())
     .on("data", (data) => {
       dataStream.push(data);
     })
     .on("end", (err) => {
       if (err) {
-        config.logger.error("An error has occurred reading file ", config.settings.filePath);
+        config.logger.error("An error has occurred reading file ", filePath);
         config.logger.error(err)
       } else {
         config.logger.info("Receiving financial information about debts...");
@@ -32,9 +34,9 @@ function readIndividuals(loaded) {
           probabilidades.push(v['defaultProbability12months']/100.0);
 
           var default_probabilities = {
-            within_3_months: 0,
-            within_6_months: 0,
-            within_9_months: 0,
+            within_3_months: undefined,
+            within_6_months: undefined,
+            within_9_months: undefined,
             within_12_months: v['defaultProbability12months']/100.0
           };
 
@@ -79,9 +81,7 @@ function readIndividuals(loaded) {
 
       config.logger.info("DONE. Financial records updated");
 
-      config.settings.individualsScoreData = dataStream;
-
-      loaded(config.settings.individualsScoreData);
+      loaded(dataStream);
 
     }
   })
@@ -90,21 +90,22 @@ function readIndividuals(loaded) {
 
 
 
-function watchOnce()
+function watchOnce(filePath)
 {
-  const watcher = fs.watch(config.settings.filePath, (evt, file) => {
+  const watcher = fs.watch(filePath, (evt, file) => {
     watcher.close()
 
     // logic goes here
     config.logger.info(Date(), evt, file);
 
    // resurrecting watcher after changes processed
-    readIndividuals(watchOnce);
+    readDataFile(watchOnce, filePath);
 
   })
 }
 
-watchOnce();
+watchOnce(config.settings.individualsFilePath);
+//watchOnce(config.settings.smesFilePath);
 
-module.exports = { readIndividuals };
+module.exports = { readDataFile };
 

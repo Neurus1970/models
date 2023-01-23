@@ -50,9 +50,6 @@ Where each element in the array `debtors` has this structure
   "id": "3890089",
   "name": "DOS SANTOS QUESADA, ALICIA LORENZA",
   "default_probability": {
-    "within_3_months": 0,
-    "within_6_months": 0,
-    "within_9_months": 0,
     "within_12_months": 0.018247683
   },
   "_links": {

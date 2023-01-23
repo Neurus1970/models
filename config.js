@@ -3,14 +3,17 @@ const { combine, timestamp, label, prettyPrint } = format;
 require('winston-daily-rotate-file');
 
 var settings = {
+  smesScoreData: [],
   individualsScoreData: [],
+  smesScoreData: [],
   appName: "scoring",
   environment: "development", // valid options: "development" | "production"
   port: 3000,
   maxPageSize: 50,
-  filePath: "resources/ResultadoScoringIndividuos.csv",
+  individualsFilePath: "resources/ResultadoScoringIndividuos.csv",
+  smesFilePath: "resources/ResultadoScoringSMEs.csv",
   log: {
-    level: "error", // | debug | info | error |
+    level: "debug", // | debug | info | error |
     path: "./logs",
     maxSize: "20m",
     maxFiles: "2d",
