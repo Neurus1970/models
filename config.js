@@ -4,7 +4,7 @@ require('winston-daily-rotate-file');
 
 var settings = {
   individualsScoreData: [],
-  smeScoreData: [],
+  //smeScoreData: [],
   appName: "scoring",
   environment: "development", // valid options: "development" | "production"
   port: 3000,

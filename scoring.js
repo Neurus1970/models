@@ -2,7 +2,7 @@ const express = require('express');
 const config = require('./config');
 const serializer = require('./scoring_modules/serializer');
 const individuals = require('./scoring_modules/individuals');
-const sme = require('./scoring_modules/sme');
+//const sme = require('./scoring_modules/sme');
 
 let server;
 process.env.NODE_ENV = config.settings.environment;
@@ -11,7 +11,7 @@ const app = express();
 
 serializer.readDataFile(function(scoringData) {
   config.settings.individualsScoreData = scoringData;
-  config.settings.smeScoreData = scoringData;
+  //config.settings.smeScoreData = scoringData;
   server = app.listen(config.settings.port, function() { 
     config.logger.debug(`Scoring model API listening on port ${config.settings.port}!`); 
     app.emit("appStarted")
@@ -19,7 +19,7 @@ serializer.readDataFile(function(scoringData) {
 });
 
 app.use(individuals);
-app.use(sme);
+//app.use(sme);
 
 app.on('shutdown', function() {
   if(server)
