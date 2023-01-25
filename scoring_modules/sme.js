@@ -60,7 +60,7 @@ router.get(config.settings.basePath+'sme', (req, res) => {
     for (i=offset; i<lastRecord; i++) {
       deudor = deudores[i];
       deudoresAmostrar.push(deudor);
-    }
+    };
 
     if (deudoresAmostrar.length != 0) {
 
