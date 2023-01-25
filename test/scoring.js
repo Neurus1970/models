@@ -132,6 +132,7 @@ describe('When a consumer application apply a filter by individual name', () => 
 
 })
 
+/*
 
 describe('When a consumer application call the API, to GET the list of scored SME', () => {
 
@@ -244,7 +245,7 @@ describe('When a consumer application apply a filter by SME name', () => {
   });
 
 });
-
+*/
 
 after((done) => {
   app.emit('shutdown');

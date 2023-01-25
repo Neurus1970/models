@@ -18,7 +18,7 @@ var settings = {
     },    
   },
   log: {
-    level: "debug", // | debug | info | error |
+    level: "error", // | debug | info | error |
     path: "./logs",
     maxSize: "20m",
     maxFiles: "7d",
