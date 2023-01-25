@@ -4,23 +4,22 @@ const fs = require('fs');
 const ss = require('simple-statistics');
 const csvParser = require('csv-parser');
 
-var contadorEventos = 0;
-
 // MAIN DATA READER
-function readDataFile(loaded, filePath) {
+function setupDataSources(dataSource, cb) {
 
   var dataStream = [];
 
-  if (!filePath) { filePath = config.settings.individualsFilePath };
+  individualsFilePath = dataSource.individuals.source;
+  smeFilePath = dataSource.sme.source;
 
-  fs.createReadStream(filePath)
+  fs.createReadStream(individualsFilePath)
     .pipe(csvParser())
     .on("data", (data) => {
       dataStream.push(data);
     })
     .on("end", (err) => {
       if (err) {
-        config.logger.error("An error has occurred reading file ", filePath);
+        config.logger.error("An error has occurred reading file ", individualsFilePath);
         config.logger.error(err)
       } else {
         config.logger.info("Receiving financial information about debts...");
@@ -79,33 +78,29 @@ function readDataFile(loaded, filePath) {
         };
       });
 
-      config.logger.info("DONE. Financial records updated");
+      config.logger.info("DONE. Scoring records updated");
 
-      loaded(dataStream);
+      config.settings.data.individuals.recordSet = dataStream;
+      cb(individualsFilePath);
 
     }
   })
-
 };
 
 
-
-function watchOnce(filePath)
-{
+function watchOnce(filePath) {
   const watcher = fs.watch(filePath, (evt, file) => {
     watcher.close()
-
-    // logic goes here
     config.logger.info(Date(), evt, file);
-
-   // resurrecting watcher after changes processed
-    readDataFile(watchOnce, filePath);
+    // resurrecting watcher after changes processed
+    setupDataSources(config.settings.data, watchOnce);
 
   })
 }
 
-watchOnce(config.settings.individualsFilePath);
-//watchOnce(config.settings.smesFilePath);
+watchOnce(config.settings.data.individuals.source);
+watchOnce(config.settings.data.sme.source);
 
-module.exports = { readDataFile };
+
+module.exports = { setupDataSources };
 

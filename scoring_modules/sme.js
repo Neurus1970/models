@@ -1,11 +1,11 @@
 const config = require('../config');
 const router = require('express').Router();
 
-router.get('/models/scoring/individuals/:id', (req, res) => {
+router.get('/models/scoring/sme/:id', (req, res) => {
 
   var initialTime = new Date();
 
-  var posicionElemento = config.settings.data.individuals.recordSet.findIndex(({id}) => id == req.params.id);
+  var posicionElemento = config.settings.smeScoreData.findIndex(({id}) => id == req.params.id);
 
   if (posicionElemento == -1) {
     res.writeHead(404, {"Content-Type": "text/plain"});
@@ -15,7 +15,7 @@ router.get('/models/scoring/individuals/:id', (req, res) => {
    var salida = {
       searchTime: new Date().getTime() - initialTime.getTime(),
       hits: 1,
-      debtors: config.settings.data.individuals.recordSet[posicionElemento]
+      debtors: config.settings.smeScoreData[posicionElemento]
     }
     res.status(200).json(salida);
   }
@@ -23,7 +23,7 @@ router.get('/models/scoring/individuals/:id', (req, res) => {
 });
 
 
-router.get('/models/scoring/individuals', (req, res) => {
+router.get('/models/scoring/sme', (req, res) => {
 
   var initialTime = new Date();
   var deudores = [];
@@ -36,11 +36,11 @@ router.get('/models/scoring/individuals', (req, res) => {
 
   if (req.query.name !== undefined) {
     names = req.query.name.toUpperCase().split(" ");
-    config.settings.data.individuals.recordSet.forEach(v => {
+    config.settings.smeScoreData.forEach(v => {
       if(names.every(name => v.name.includes(name))) deudores.push(v);
     });
   } else
-    deudores = config.settings.data.individuals.recordSet;
+    deudores = config.settings.smeScoreData;
 
   if (deudores.length == 0) {
     res.writeHead(404, {"Content-Type": "text/plain"});
@@ -69,8 +69,8 @@ router.get('/models/scoring/individuals', (req, res) => {
       if (deudores.length % pageSize != 0)
         cantidadPaginas++;
 
-      nextPage = '/models/scoring/individuals?page='.concat(pageNumber+2);
-      prevPage = '/models/scoring/individuals?page='.concat(pageNumber);
+      nextPage = '/models/scoring/sme?page='.concat(pageNumber+2);
+      prevPage = '/models/scoring/sme?page='.concat(pageNumber);
 
       if (req.query.name !== undefined) {
         nextPage = nextPage.concat("&name=").concat(req.query.name).replace(" ", "%20");

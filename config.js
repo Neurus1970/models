@@ -3,29 +3,30 @@ const { combine, timestamp, label, prettyPrint } = format;
 require('winston-daily-rotate-file');
 
 var settings = {
-  individualsScoreData: [],
-  //smeScoreData: [],
   appName: "scoring",
-  environment: "development", // valid options: "development" | "production"
+  environment: "DEV", // valid options: "DEV" | "PRO"
   port: 3000,
   maxPageSize: 50,
-  individualsFilePath: "resources/ResultadoScoringIndividuos.csv",
-  smesFilePath: "resources/ResultadoScoringSMEs.csv",
+  data: {
+    individuals: {
+      source: "resources/ResultadoScoringIndividuos.csv",
+      recordSet: [],
+    },
+    sme: {
+      source: "resources/ResultadoScoringSMEs.csv",
+      recordSet: [],
+    },    
+  },
   log: {
-    level: "error", // | debug | info | error |
+    level: "debug", // | debug | info | error |
     path: "./logs",
     maxSize: "20m",
-    maxFiles: "2d",
+    maxFiles: "7d",
     filename: "scoring-%DATE%.log",
     datePattern: "YYYY-MM-DD-HH",
     zippedArchive: false,
     printPrivateData: false
   },
-  db: {
-    production: "",
-    development: "",
-    test: ""
-  }
 };
 
 const ignorePrivate = format((info, opts) => {
