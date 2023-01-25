@@ -42,16 +42,24 @@ function getRecordset(filePath, onRecordsetRed) {
           probabilidades.push(v['defaultProbability12months']/100.0);
 
           var default_probabilities = {
-            within_3_months: undefined,
-            within_6_months: undefined,
-            within_9_months: undefined,
             within_12_months: v['defaultProbability12months']/100.0
           };
 
           v.default_probability = default_probabilities;
 
+          basePath = "/models/scoring/";
+
+          switch (filePath) {
+            case("resources/ResultadoScoringIndividuos.csv"):
+              basePath+="individuals/";
+              break;
+            case("resources/ResultadoScoringSMEs.csv"):
+              basePath+="sme/";
+              break;
+          }
+
           var links = {
-            href:"/models/scoring/individuals/"+v.id
+            href:basePath+v.id
           };
           v['_links'] = links;
 

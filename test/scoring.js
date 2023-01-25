@@ -6,6 +6,7 @@ const chaiHttp = require('chai-http');
 const expect = chai.expect;
 
 var first_individual = 0;
+var first_sme = 0;
 var dataPages = 0;
 
 chai.should();
@@ -132,7 +133,7 @@ describe('When a consumer application apply a filter by individual name', () => 
 
 })
 
-/*
+
 
 describe('When a consumer application call the API, to GET the list of scored SME', () => {
 
@@ -141,7 +142,7 @@ describe('When a consumer application call the API, to GET the list of scored SM
       .get('/models/scoring/sme')
       .then(res => {
         res.should.have.status(200);
-        first_individual = res.body.debtors[0];
+        first_sme = res.body.debtors[0];
         dataPages = res.body.dataPages;
       })
       .catch(err => {
@@ -201,7 +202,7 @@ describe('When a consumer application navigates to a specific scored SME', () =>
 
   it('responds with HTTP 200 response code when the SME does exist', () => {
     return chai.request(app)
-      .get(first_individual._links.href)
+      .get(first_sme._links.href)
       .then(res => {
         res.should.have.status(200)
       })
@@ -227,14 +228,14 @@ describe('When a consumer application apply a filter by SME name', () => {
 
   it('displays a list of SME whose names are cointained in the filter ', () => {
     return chai.request(app)
-      .get('/models/scoring/sme?name='+first_individual.name.split(',')[0])
+      .get('/models/scoring/sme?name='+first_sme.name.split(',')[0])
       .then(res => {
         var notMatching = [];
-        var names = first_individual.name.split(',')[0].split(' ');
+        var names = first_sme.name.split(',')[0].split(' ');
 
         res.body.debtors.forEach(v => {
           if(names.every(name => v.name.includes(name))) {
-            config.logger.debug(v.name + ' COINCIDE CON LAS PALABRAS CLAVE: ' +first_individual.name.split(',')[0]);
+            config.logger.debug(v.name + ' COINCIDE CON LAS PALABRAS CLAVE: ' +first_sme.name.split(',')[0]);
           } else { notMatching.push(v.name) }
         });
         notMatching.should.have.lengthOf(0);
@@ -245,7 +246,7 @@ describe('When a consumer application apply a filter by SME name', () => {
   });
 
 });
-*/
+
 
 after((done) => {
   app.emit('shutdown');

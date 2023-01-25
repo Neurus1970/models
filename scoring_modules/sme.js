@@ -5,8 +5,8 @@ router.get('/models/scoring/sme/:id', (req, res) => {
 
   var initialTime = new Date();
 
-  var posicionElemento = config.settings.smeScoreData.findIndex(({id}) => id == req.params.id);
-
+  var posicionElemento = config.settings.data.sme.recordSet.findIndex(({id}) => id == req.params.id);
+  
   if (posicionElemento == -1) {
     res.writeHead(404, {"Content-Type": "text/plain"});
     res.write("404 Not found");
@@ -15,7 +15,7 @@ router.get('/models/scoring/sme/:id', (req, res) => {
    var salida = {
       searchTime: new Date().getTime() - initialTime.getTime(),
       hits: 1,
-      debtors: config.settings.smeScoreData[posicionElemento]
+      debtors: config.settings.data.sme.recordSet[posicionElemento]
     }
     res.status(200).json(salida);
   }
@@ -36,11 +36,11 @@ router.get('/models/scoring/sme', (req, res) => {
 
   if (req.query.name !== undefined) {
     names = req.query.name.toUpperCase().split(" ");
-    config.settings.smeScoreData.forEach(v => {
+    config.settings.data.sme.recordSet.forEach(v => {
       if(names.every(name => v.name.includes(name))) deudores.push(v);
     });
   } else
-    deudores = config.settings.smeScoreData;
+    deudores = config.settings.data.sme.recordSet;
 
   if (deudores.length == 0) {
     res.writeHead(404, {"Content-Type": "text/plain"});
