@@ -47,7 +47,7 @@ function getRecordset(filePath, onRecordsetRed) {
 
           v.default_probability = default_probabilities;
 
-          basePath = "/models/scoring/";
+          basePath = config.settings.basePath;
 
           switch (filePath) {
             case("resources/ResultadoScoringIndividuos.csv"):
@@ -116,7 +116,7 @@ function watchOnce(filePath) {
     config.logger.info(Date(), evt, file);
     // resurrecting watcher after changes processed
     getRecordset(filePath, function(newData) {
-      if (fileName = config.settings.data.individuals.source)
+      if (filePath == config.settings.data.individuals.source)
         config.settings.data.individuals.recordSet = newData
       else
         config.settings.data.sme.recordSet = newData

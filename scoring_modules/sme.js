@@ -1,10 +1,9 @@
 const config = require('../config');
 const router = require('express').Router();
 
-router.get('/models/scoring/sme/:id', (req, res) => {
+router.get(config.settings.basePath+'sme/:id', (req, res) => {
 
   var initialTime = new Date();
-
   var posicionElemento = config.settings.data.sme.recordSet.findIndex(({id}) => id == req.params.id);
   
   if (posicionElemento == -1) {
@@ -23,7 +22,7 @@ router.get('/models/scoring/sme/:id', (req, res) => {
 });
 
 
-router.get('/models/scoring/sme', (req, res) => {
+router.get(config.settings.basePath+'sme', (req, res) => {
 
   var initialTime = new Date();
   var deudores = [];
@@ -69,8 +68,8 @@ router.get('/models/scoring/sme', (req, res) => {
       if (deudores.length % pageSize != 0)
         cantidadPaginas++;
 
-      nextPage = '/models/scoring/sme?page='.concat(pageNumber+2);
-      prevPage = '/models/scoring/sme?page='.concat(pageNumber);
+      nextPage = config.settings.basePath+'sme?page='.concat(pageNumber+2);
+      prevPage = config.settings.basePath+'sme?page='.concat(pageNumber);
 
       if (req.query.name !== undefined) {
         nextPage = nextPage.concat("&name=").concat(req.query.name).replace(" ", "%20");

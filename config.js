@@ -4,6 +4,7 @@ require('winston-daily-rotate-file');
 
 var settings = {
   appName: "scoring",
+  basePath: "/models/scoring/",
   environment: "DEV", // valid options: "DEV" | "PRO"
   port: 3000,
   maxPageSize: 50,

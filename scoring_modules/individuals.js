@@ -1,7 +1,7 @@
 const config = require('../config');
 const router = require('express').Router();
 
-router.get('/models/scoring/individuals/:id', (req, res) => {
+router.get(config.settings.basePath+'individuals/:id', (req, res) => {
 
   var initialTime = new Date();
 
@@ -23,7 +23,7 @@ router.get('/models/scoring/individuals/:id', (req, res) => {
 });
 
 
-router.get('/models/scoring/individuals', (req, res) => {
+router.get(config.settings.basePath+'individuals', (req, res) => {
 
   var initialTime = new Date();
   var deudores = [];
@@ -69,8 +69,8 @@ router.get('/models/scoring/individuals', (req, res) => {
       if (deudores.length % pageSize != 0)
         cantidadPaginas++;
 
-      nextPage = '/models/scoring/individuals?page='.concat(pageNumber+2);
-      prevPage = '/models/scoring/individuals?page='.concat(pageNumber);
+      nextPage = config.settings.basePath+'individuals?page='.concat(pageNumber+2);
+      prevPage = config.settings.basePath+'individuals?page='.concat(pageNumber);
 
       if (req.query.name !== undefined) {
         nextPage = nextPage.concat("&name=").concat(req.query.name).replace(" ", "%20");
