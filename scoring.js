@@ -10,7 +10,7 @@ app.use(debtors);
 
 serializer.setupDataSources(config.settings.data, function() {
   server = app.listen(config.settings.port, function() { 
-    config.logger.debug(`Scoring model API listening on port ${config.settings.port}!`); 
+    config.logger.info(`Scoring model API listening on port ${config.settings.port}!`); 
     app.emit("appStarted")
   })
 });

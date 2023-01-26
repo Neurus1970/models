@@ -7,7 +7,6 @@ const csvParser = require('csv-parser');
 
 // MAIN DATA READER
 function setupDataSources(dataSource, dataSourceConfigured) {
-
   readFile(dataSource.individuals.source, function(data) {
     dataSource.individuals.recordSet = data;
     readFile(dataSource.sme.source, function(data) {
@@ -29,20 +28,19 @@ function getRecordset(filePath, onRecordsetRed) {
     })
     .on("end", (err) => {
       if (err) {
-        config.logger.error("An error has occurred reading file ", filePath);
+        config.logger.error("An error has occurred reading file "+filePath);
         config.logger.error(err)
       } else {
-        config.logger.info("Receiving financial information about debts...");
-
-        var probabilidades = getProbabilities(dataStream, filePath);
+        config.logger.info("Receiving new scoring information... "+filePath);
 
         // orderno por probabilidad de default para poder contar
-        dataStream.sort((a,b) => a.default_probability.within_12_months - b.default_probability.within_12_months);
-        var percentileRanks = Math.floor(dataStream.length/10);
-        var rankLimits = computeRankLimits(dataStream, percentileRanks);
+        dataStream.sort((a,b) => parseFloat(a.defaultProbability12months) - parseFloat(b.defaultProbability12months));
+
+        var probabilities = getProbabilities(dataStream, filePath);
+        var rankLimits = computeRankLimits(dataStream, Math.floor(dataStream.length/10));
         
         // calculo los datos del mercado
-        computeStats(dataStream, rankLimits, probabilidades);
+        computeStats(dataStream, rankLimits, probabilities);
 
         config.logger.info("DONE. Scoring records updated");
         onRecordsetRed(dataStream);
@@ -52,7 +50,6 @@ function getRecordset(filePath, onRecordsetRed) {
 
 
 function readFile(filePath, fileRed) {
-  // resurrecting watcher after changes processed
   getRecordset(filePath, function(data) {
     watchOnce(filePath);
     fileRed(data)
