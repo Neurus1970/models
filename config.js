@@ -10,10 +10,12 @@ var settings = {
   maxPageSize: 50,
   data: {
     individuals: {
+      resourceName : "individuals",
       source: "resources/ResultadoScoringIndividuos.csv",
       recordSet: [],
     },
     sme: {
+      resourceName : "sme",
       source: "resources/ResultadoScoringSMEs.csv",
       recordSet: [],
     },    
