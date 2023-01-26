@@ -44,9 +44,8 @@ function getRecordset(filePath, onRecordsetRed) {
           limit = dataStream[i*percentileRanks].default_probability.within_12_months;
           rankLimits.push(limit);
         };
-
+        
         config.logger.debug(`RANK LIMITS: ${rankLimits}`);
-
         computeStats(dataStream, rankLimits, probabilidades);
 
         config.logger.info("DONE. Scoring records updated");

@@ -1,14 +1,12 @@
 const express = require('express');
 const config = require('./config');
 const serializer = require('./scoring_modules/serializer');
-const individuals = require('./scoring_modules/individuals');
-const sme = require('./scoring_modules/sme');
+const debtors = require('./scoring_modules/debtors');
 
 let server;
 const app = express();
 
-app.use(individuals);
-app.use(sme);
+app.use(debtors);
 
 serializer.setupDataSources(config.settings.data, function() {
   server = app.listen(config.settings.port, function() { 

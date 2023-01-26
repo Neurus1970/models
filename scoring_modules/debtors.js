@@ -1,10 +1,10 @@
 const config = require('../config');
 const router = require('express').Router();
 
-router.get(config.settings.basePath+'sme/:id', (req, res) => {
-
+router.get(config.settings.basePath+':kind/:id', (req, res) => {
   var initialTime = new Date();
-  var posicionElemento = config.settings.data.sme.recordSet.findIndex(({id}) => id == req.params.id);
+  var data = config.settings.data;
+  var posicionElemento = data[req.params.kind].recordSet.findIndex(({id}) => id == req.params.id);
   
   if (posicionElemento == -1) {
     res.writeHead(404, {"Content-Type": "text/plain"});
@@ -14,19 +14,19 @@ router.get(config.settings.basePath+'sme/:id', (req, res) => {
    var salida = {
       searchTime: new Date().getTime() - initialTime.getTime(),
       hits: 1,
-      debtors: config.settings.data.sme.recordSet[posicionElemento]
+      debtors: data[req.params.kind].recordSet[posicionElemento]
     }
     res.status(200).json(salida);
   }
-
 });
 
 
-router.get(config.settings.basePath+'sme', (req, res) => {
+router.get(config.settings.basePath+':kind', (req, res) => {
 
   var initialTime = new Date();
   var deudores = [];
   var deudoresAmostrar = [];
+  var data = config.settings.data;
 
   if (req.query.pageSize === undefined || req.query.pageSize > config.settings.maxPageSize)
     pageSize = config.settings.maxPageSize
@@ -35,11 +35,11 @@ router.get(config.settings.basePath+'sme', (req, res) => {
 
   if (req.query.name !== undefined) {
     names = req.query.name.toUpperCase().split(" ");
-    config.settings.data.sme.recordSet.forEach(v => {
+    data[req.params.kind].recordSet.forEach(v => {
       if(names.every(name => v.name.includes(name))) deudores.push(v);
     });
   } else
-    deudores = config.settings.data.sme.recordSet;
+    deudores = data[req.params.kind].recordSet;
 
   if (deudores.length == 0) {
     res.writeHead(404, {"Content-Type": "text/plain"});
@@ -68,8 +68,8 @@ router.get(config.settings.basePath+'sme', (req, res) => {
       if (deudores.length % pageSize != 0)
         cantidadPaginas++;
 
-      nextPage = config.settings.basePath+'sme?page='.concat(pageNumber+2);
-      prevPage = config.settings.basePath+'sme?page='.concat(pageNumber);
+      nextPage = config.settings.basePath+req.params.kind+'?page='.concat(pageNumber+2);
+      prevPage = config.settings.basePath+req.params.kind+'?page='.concat(pageNumber);
 
       if (req.query.name !== undefined) {
         nextPage = nextPage.concat("&name=").concat(req.query.name).replace(" ", "%20");
