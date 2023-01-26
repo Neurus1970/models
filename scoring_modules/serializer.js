@@ -39,13 +39,9 @@ function getRecordset(filePath, onRecordsetRed) {
         // orderno por probabilidad de default para poder contar
         dataStream.sort((a,b) => a.default_probability.within_12_months - b.default_probability.within_12_months);
         var percentileRanks = Math.floor(dataStream.length/10);
-        var rankLimits = [];
-        for (i=0; i<=9; i++) {
-          limit = dataStream[i*percentileRanks].default_probability.within_12_months;
-          rankLimits.push(limit);
-        };
+        var rankLimits = computeRankLimits(dataStream, percentileRanks);
         
-        config.logger.debug(`RANK LIMITS: ${rankLimits}`);
+        // calculo los datos del mercado
         computeStats(dataStream, rankLimits, probabilidades);
 
         config.logger.info("DONE. Scoring records updated");
@@ -60,7 +56,7 @@ function readFile(filePath, fileRed) {
   getRecordset(filePath, function(data) {
     watchOnce(filePath);
     fileRed(data)
-  });
+  })
 };
 
 
@@ -81,6 +77,15 @@ function watchOnce(filePath) {
     watchOnce(filePath);
 
   })
+};
+
+
+function computeRankLimits(ds, pr) {
+  var rl = new Array;
+  for (i=0; i<=9; i++)
+    rl.push(ds[i*pr].default_probability.within_12_months);
+  config.logger.debug(`RANK LIMITS: ${rl}`);
+  return(rl)
 };
 
 
@@ -145,6 +150,3 @@ function getProbabilities(ds, fp) {
 };
 
 module.exports = { setupDataSources };
-
-
-
