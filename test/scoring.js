@@ -85,11 +85,12 @@ describe('When a consumer application navigates to a specific scored individual'
     })
   });
 
-  it('responds with HTTP 200 response code when the individual does exists', () => {
+  it('responds with HTTP 200 response code and the individual requested when the individual does exists', () => {
     return chai.request(app)
       .get(first_individual._links.href)
       .then(res => {
-        res.should.have.status(200)
+        res.should.have.status(200);
+        res.body.debtors.id.should.be.equal(first_individual.id);
       })
       .catch(err => {
         throw err
@@ -200,11 +201,12 @@ describe('When a consumer application navigates to a specific scored SME', () =>
     })
   });
 
-  it('responds with HTTP 200 response code when the SME does exist', () => {
+  it('responds with HTTP 200 response code and the SME requested when the SME does exist', () => {
     return chai.request(app)
       .get(first_sme._links.href)
       .then(res => {
-        res.should.have.status(200)
+        res.should.have.status(200);
+        res.body.debtors.id.should.be.equal(first_individual.id);
       })
       .catch(err => {
         throw err

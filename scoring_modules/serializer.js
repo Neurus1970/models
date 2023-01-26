@@ -137,6 +137,7 @@ function getProbabilities(ds, fp) {
     v['_links'] = links;
 
     delete v['defaultProbability12months'];
+
   });
 
   return (p)
