@@ -13,22 +13,28 @@ function isResourceImplemented(res) {
 
 
 router.get(config.settings.basePath+':kind/:id', (req, res) => {
-  var initialTime = new Date();
-  var data = config.settings.data;
-  var posicionElemento = data[req.params.kind].recordSet.findIndex(({id}) => id == req.params.id);
-  
-  if (posicionElemento == -1) {
-    res.writeHead(404, {"Content-Type": "text/plain"});
-    res.write("404 Not found");
-    res.end();
-  } else {
-   var salida = {
-      searchTime: new Date().getTime() - initialTime.getTime(),
-      hits: 1,
-      debtors: data[req.params.kind].recordSet[posicionElemento]
+  if (isResourceImplemented(req.params.kind)) {
+    var initialTime = new Date();
+    var data = config.settings.data;
+    var posicionElemento = data[req.params.kind].recordSet.findIndex(({id}) => id == req.params.id);
+    
+    if (posicionElemento == -1) {
+      res.writeHead(404, {"Content-Type": "text/plain"});
+      res.write("404 Not found");
+      
+    } else {
+     var salida = {
+        searchTime: new Date().getTime() - initialTime.getTime(),
+        hits: 1,
+        debtors: data[req.params.kind].recordSet[posicionElemento]
+      }
+      res.status(200).json(salida);
     }
-    res.status(200).json(salida);
+  } else {
+    res.writeHead(404, {"Content-Type": "text/plain"});
+    res.write("404 Not Found");
   }
+  res.end();
 });
 
 
