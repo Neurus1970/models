@@ -3,22 +3,23 @@ const { combine, timestamp, label, prettyPrint } = format;
 require('winston-daily-rotate-file');
 
 var settings = {
+  ranks:10,
   appName: "scoring",
   basePath: "/models/scoring/",
   environment: "DEV", // valid options: "DEV" | "PRO"
   port: 3000,
   maxPageSize: 50,
   data: {
-    individuals: {
+    "individuals": {
       resourceName : "individuals",
       source: "resources/ResultadoScoringIndividuos.csv",
       recordSet: [],
     },
-    sme: {
+    "sme": {
       resourceName : "sme",
       source: "resources/ResultadoScoringSMEs.csv",
       recordSet: [],
-    },    
+    }
   },
   log: {
     level: "info", // | debug | info | error |
@@ -64,3 +65,20 @@ const logger = createLogger({
 });
 
 module.exports = { settings, logger };
+
+
+/*
+  data: [
+    {
+      resourceName : "individuals",
+      source: "resources/ResultadoScoringIndividuos.csv",
+      recordSet: [],
+    },
+    {
+      resourceName : "sme",
+      source: "resources/ResultadoScoringSMEs.csv",
+      recordSet: [],
+    }
+  ],
+
+*/

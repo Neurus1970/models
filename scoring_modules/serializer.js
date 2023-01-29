@@ -6,7 +6,7 @@ const csvParser = require('csv-parser');
 
 
 // MAIN DATA READER
-function setupDataSources(dataSource, dataSourceConfigured) {
+function setupDataSources(dataSource, dataSourceConfigured) {  
   readFile(dataSource.individuals.source, function(data) {
     dataSource.individuals.recordSet = data;
     readFile(dataSource.sme.source, function(data) {
@@ -18,12 +18,24 @@ function setupDataSources(dataSource, dataSourceConfigured) {
 
 
 function getRecordset(filePath, onRecordsetRed) {
+  console.log(filePath);
+  console.log(getResourceNameByFileName(filePath));
 
   var dataStream = [];
 
   fs.createReadStream(filePath)
     .pipe(csvParser())
     .on("data", (data) => {
+      data.id = data.id.replace(/^0+/, '');
+      data.name = data.name.replace(/\s\s+/g, ' ').replace(' ,', ',').trim();
+      data.default_probability = {
+        within_12_months: data['defaultProbability12months']/100.0
+      };
+      data['_links'] = {
+        href:config.settings.basePath+getResourceNameByFileName(filePath)+'/'+data.id
+      };;
+      delete data.defaultProbability12months;
+
       dataStream.push(data);
     })
     .on("end", (err) => {
@@ -36,11 +48,11 @@ function getRecordset(filePath, onRecordsetRed) {
         // orderno por probabilidad de default para poder contar
         dataStream.sort((a,b) => parseFloat(a.defaultProbability12months) - parseFloat(b.defaultProbability12months));
 
-        var probabilities = getProbabilities(dataStream, filePath);
-        var rankLimits = computeRankLimits(dataStream, Math.floor(dataStream.length/10));
+        getResourceNameByFileName(filePath);
+        var rankLimits = computeRankLimits(dataStream, Math.floor(dataStream.length/config.settings.ranks));
         
         // calculo los datos del mercado
-        computeStats(dataStream, rankLimits, probabilities);
+        computeStats(dataStream, rankLimits);
 
         config.logger.info("DONE. Scoring records updated");
         onRecordsetRed(dataStream);
@@ -86,19 +98,31 @@ function computeRankLimits(ds, pr) {
 };
 
 
-function computeStats(dat, l, p) {
+function getSampleStats(ds) {
+  const p = new Array();
+  var x = new Object();
+  ds.forEach(d => {
+    p.push(d.default_probability.within_12_months);
+  });
+  x.medianaDeuda = ss.median(p);
+  x.desviacion = ss.standardDeviation(p);
+  x.mediaDeuda = ss.mean(p);
+  return(x);
+};
+
+
+function computeStats(dat, l) {
   // me guardo la mediana de las deudas para dar un indicador relativo
   // de la deuda de cada deudor
-  var medianaDeuda = ss.median(p);
-  var desviacion = ss.standardDeviation(p);
-  var mediaDeuda = ss.mean(p);
+
+  var stats = getSampleStats(dat);
 
   dat.forEach(d => {
-    d.median = medianaDeuda;
-    d.mean = mediaDeuda;
-    d.stdDev = desviacion;
-    d.rank = 10;
-    for (i=0; i<=9; i++) {
+    d.median = stats.medianaDeuda;
+    d.mean = stats.mediaDeuda;
+    d.stdDev = stats.desviacion;
+    d.rank = config.settings.ranks;
+    for (i=0; i<=config.settings.ranks-1; i++) {
       if (d.default_probability.within_12_months >= l[i]) {
         d.rank = i+1;
       }
@@ -107,43 +131,22 @@ function computeStats(dat, l, p) {
 };
 
 
-function getProbabilities(ds, fp) {
+function getResourceNameByFileName (fileName) {
 
-  const p = new Array();
-  ds.forEach(v => {
-    v['id'] = v['id'].replace(/^0+/, '');
-    v['name'] = v['name'].replace(/\s\s+/g, ' ').replace(' ,', ',').trim();
-    // me lo guardo para calcular la mediana
-    p.push(v['defaultProbability12months']/100.0);
-
-    var default_probabilities = {
-      within_12_months: v['defaultProbability12months']/100.0
-    };
-
-    v.default_probability = default_probabilities;
-
-    var basePath = config.settings.basePath;
-
-    switch (fp) {
-      case(config.settings.data.individuals.source):
-        basePath+="individuals/";
-        break;
-      case(config.settings.data.sme.source):
-        basePath+="sme/";
-        break;
-    };
-
-    var links = {
-      href:basePath+v.id
-    };
-    v['_links'] = links;
-
-    delete v['defaultProbability12months'];
-
-  });
-
-  return (p)
-
+  if (fileName == "resources/ResultadoScoringIndividuos.csv")
+    return "individuals"
+  else
+    return "sme"
+  /*
+  var res;
+  config.settings.data.forEach(fs => {
+    if(fs.source = fileName)
+      resource = fs.resourceName;
+  })
+  return(res)
+  */
 };
 
+
 module.exports = { setupDataSources };
+
